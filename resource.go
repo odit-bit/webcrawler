@@ -28,6 +28,13 @@ type Resource struct {
 	retrieve time.Time
 }
 
+func NewResource() *Resource {
+	r := &Resource{
+		rawBuffer: bytes.Buffer{},
+	}
+	return r
+}
+
 func (r *Resource) Retrieved() {
 	r.retrieve = time.Now().UTC()
 }
