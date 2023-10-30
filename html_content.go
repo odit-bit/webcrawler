@@ -96,7 +96,8 @@ func sanitizeBytes(sanitizer *bluemonday.Policy, buf *bytes.Buffer) (title, body
 		// }
 	}
 
-	body = sanitizer.SanitizeReader(buf).Bytes()
+	reader := sanitizer.SanitizeReader(buf)
+	body = reader.Bytes()
 	if ok := isValidUTF8(body); !ok {
 		body = nil
 	} else {
@@ -106,6 +107,7 @@ func sanitizeBytes(sanitizer *bluemonday.Policy, buf *bytes.Buffer) (title, body
 
 	}
 
+	reader.Reset()
 	return title, body
 
 }

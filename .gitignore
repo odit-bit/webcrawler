@@ -1,2 +1,5 @@
 xold/
 /xold
+
+# profiling
+*.pprof

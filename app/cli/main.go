@@ -3,10 +3,13 @@ package main
 import (
 	"bufio"
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
+	"runtime"
+	"runtime/pprof"
 	"sync"
 	"syscall"
 
@@ -16,12 +19,39 @@ import (
 
 func main() {
 
+	// defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
+	// Start CPU profiling
+
+	var pprofStr string
+	flag.StringVar(&pprofStr, "pprof", "", "profiling ")
+	flag.Parse()
+
+	fmt.Println(pprofStr)
+	if pprofStr != "" {
+		switch pprofStr {
+		case "cpu":
+			f, _ := os.Create("cpu.pprof")
+			pprof.StartCPUProfile(f)
+			defer pprof.StopCPUProfile()
+
+		case "memory":
+			f, _ := os.Create("memory.pprof")
+			defer f.Close() // error handling omitted for example
+			runtime.GC()    // get up-to-date statistics
+			if err := pprof.WriteHeapProfile(f); err != nil {
+				log.Fatal("could not write memory profile: ", err)
+			}
+		default:
+			fmt.Println("no profiling")
+		}
+	}
+
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(bufio.ScanLines)
 	ui := userInput{scn: scanner}
 	print := printer{}
 
-	cr := webcrawler.NewCrawler(&ui, &print)
+	cr := webcrawler.NewCrawler()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -30,7 +60,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		err := cr.Crawl(ctx)
+		err := cr.Crawl(ctx, &ui, &print)
 		if err != nil {
 			log.Println("crawler error:", err)
 		}

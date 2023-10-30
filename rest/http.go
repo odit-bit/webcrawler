@@ -35,10 +35,10 @@ func (a *api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		idx:     0,
 	}
 
-	cl := webcrawler.NewCrawler(iter, iter)
+	cl := webcrawler.NewCrawler()
 
 	go func() {
-		cl.Crawl(r.Context())
+		cl.Crawl(r.Context(), iter, iter)
 	}()
 
 	// set as json to stream the result to response

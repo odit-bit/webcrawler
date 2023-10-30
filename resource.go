@@ -3,10 +3,17 @@ package webcrawler
 import (
 	"bytes"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+var resourcePool = sync.Pool{
+	New: func() any {
+		return newResource()
+	},
+}
 
 // represents HTTP URL as Resouces that will crawled
 type Resource struct {
@@ -28,11 +35,27 @@ type Resource struct {
 	retrieve time.Time
 }
 
-func NewResource() *Resource {
+func newResource() *Resource {
 	r := &Resource{
 		rawBuffer: bytes.Buffer{},
 	}
 	return r
+}
+
+func NewResource() *Resource {
+	r := resourcePool.Get().(*Resource)
+	return r
+}
+
+func (r *Resource) Put() {
+	r.ID = uuid.Nil
+	r.URL = r.URL[:0]
+	r.Title = r.Title[:0]
+	r.Content = r.Content[:0]
+	r.FoundURLs = r.FoundURLs[:0]
+	r.retrieve = time.Time{}
+	r.rawBuffer.Reset()
+	resourcePool.Put(r)
 }
 
 func (r *Resource) Retrieved() {

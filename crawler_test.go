@@ -68,8 +68,11 @@ func Test_crawl(t *testing.T) {
 	// data sink function
 	sink := mockSink{}
 
-	crawler := NewCrawler(&source, &sink)
-	if err := crawler.Crawl(context.TODO()); err != nil {
+	crawler := NewCrawler()
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
+
+	if err := crawler.Crawl(ctx, &source, &sink); err != nil {
 		t.Fatal(err)
 	}
 
