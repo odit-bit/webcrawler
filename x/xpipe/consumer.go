@@ -2,7 +2,6 @@ package xpipe
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"sync"
 )
@@ -23,9 +22,9 @@ func NewConsumer[T any](streamer Streamer[T]) *Consumer[T] {
 
 // consume data-bus , and error-bus from pipe
 func (c *Consumer[T]) Consume(ctx context.Context, resultC <-chan T, errBus <-chan error) error {
-	defer func() {
-		log.Println("exit Consume")
-	}()
+	// defer func() {
+	// 	log.Println("exit Consume")
+	// }()
 
 	var wg sync.WaitGroup
 	consumeC := make(chan T)
@@ -43,7 +42,7 @@ func (c *Consumer[T]) Consume(ctx context.Context, resultC <-chan T, errBus <-ch
 					// maybe close
 					return
 				}
-				fmt.Println("got error ", err)
+				log.Println("consumer pipe :", err)
 			}
 		}
 	}()
@@ -59,14 +58,14 @@ func (c *Consumer[T]) Consume(ctx context.Context, resultC <-chan T, errBus <-ch
 			case v, ok := <-resultC:
 				if !ok {
 					//channel maybe close
-					log.Println("pipe consumer: result chan is closed")
+					// log.Println("pipe consumer: result chan is closed")
 					return
 				}
 				select {
 				case <-ctx.Done():
 					return
 				case consumeC <- v:
-					log.Println("pipe consumer: try send result")
+					// log.Println("pipe consumer: try send result")
 				}
 
 			case <-ctx.Done():

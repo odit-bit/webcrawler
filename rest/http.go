@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"sync"
 
 	"github.com/odit-bit/webcrawler"
 	"github.com/odit-bit/webcrawler/x/xpipe"
@@ -11,34 +12,36 @@ import (
 
 var _ http.Handler = (*api)(nil)
 
-type api struct{}
+type api struct {
+	crawler webcrawler.Crawler
+}
 
 func New() *api {
-	a := api{}
+	a := api{
+		crawler: *webcrawler.NewCrawler(),
+	}
 	return &a
 }
 
 // ServeHTTP implements http.Handler.
 func (a *api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	var reqData []webcrawler.Resource
-	err := json.NewDecoder(r.Body).Decode(&reqData)
-	if err != nil {
-		http.Error(w, "internal server error", http.StatusInternalServerError)
+	q := r.URL.Query().Get("url")
+	if q == "" {
+		http.Error(w, "url is nil", http.StatusBadRequest)
 		return
 	}
 
-	//we need datastructure to stream the request into crawler
-	iter := &requestIterator{
-		resultC: make(chan *webcrawler.Resource),
-		reqData: reqData,
-		idx:     0,
-	}
+	resource := webcrawler.NewResource()
+	resource.URL = q
 
-	cl := webcrawler.NewCrawler()
+	//we need datastructure to stream the request into crawler
+	iter := requestPool.Get().(*requestIterator)
+	defer iter.Close()
+	iter.reqData = append(iter.reqData, resource)
 
 	go func() {
-		cl.Crawl(r.Context(), iter, iter)
+		a.crawler.Crawl(r.Context(), iter, iter)
 	}()
 
 	// set as json to stream the result to response
@@ -57,6 +60,7 @@ func (a *api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					return
 				} else {
 					f.Flush()
+					res.Put()
 					continue
 				}
 			}
@@ -67,12 +71,24 @@ func (a *api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 }
 
+var requestPool = sync.Pool{
+	New: func() any {
+		ri := &requestIterator{
+			resultC: make(chan *webcrawler.Resource),
+			reqData: []*webcrawler.Resource{},
+			idx:     0,
+		}
+
+		return ri
+	},
+}
+
 var _ xpipe.Fetcher[*webcrawler.Resource] = (*requestIterator)(nil)
 var _ xpipe.Streamer[*webcrawler.Resource] = (*requestIterator)(nil)
 
 type requestIterator struct {
 	resultC chan *webcrawler.Resource
-	reqData []webcrawler.Resource
+	reqData []*webcrawler.Resource
 	idx     int
 }
 
@@ -114,5 +130,13 @@ func (a *requestIterator) Resource() *webcrawler.Resource {
 	v := a.reqData[a.idx]
 	a.idx++
 	// log.Println("Api data fetched :", v.URL)
-	return &v
+	return v
+}
+
+func (a *requestIterator) Close() {
+	a.idx = 0
+	a.reqData = a.reqData[:0]
+	a.resultC = nil
+
+	requestPool.Put(a)
 }

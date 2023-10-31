@@ -3,3 +3,12 @@ xold/
 
 # profiling
 *.pprof
+
+# docker 
+docker-compose.yaml
+*.dockerfile
+
+
+#
+app/
+/app

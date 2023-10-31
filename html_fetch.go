@@ -5,14 +5,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"regexp"
 	"strings"
 
 	"github.com/odit-bit/webcrawler/x/xpipe"
-)
-
-var (
-	exclusionRegex = regexp.MustCompile(`(?i)\.(?:jpg|jpeg|png|gif|ico|css|js|pdf)$`)
 )
 
 func FetchHTML() xpipe.ProcessorFunc[*Resource] {

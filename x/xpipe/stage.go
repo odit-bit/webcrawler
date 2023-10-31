@@ -157,9 +157,9 @@ func merge[T any](ctx context.Context, ch ...<-chan T) <-chan T {
 
 	// wait all goroutines exit
 	go func() {
-		defer func() {
-			log.Println("exit merge bus")
-		}()
+		// defer func() {
+		// 	log.Println("exit merge bus")
+		// }()
 		defer close(out)
 		wg.Wait()
 

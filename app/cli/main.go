@@ -98,11 +98,10 @@ func (ui *userInput) Next() bool {
 // Resource implements xpipe.Fetcher.
 func (ui *userInput) Resource() *webcrawler.Resource {
 	text := ui.scn.Text()
-	wr := webcrawler.Resource{
-		URL: text,
-	}
+	wr := webcrawler.NewResource()
+	wr.URL = text
 
-	return &wr
+	return wr
 }
 
 var _ xpipe.Streamer[*webcrawler.Resource] = (*printer)(nil)
@@ -119,6 +118,7 @@ func (p *printer) Consume(ctx context.Context, result <-chan *webcrawler.Resourc
 		case r, ok := <-result:
 			if ok {
 				fmt.Println(r)
+				r.Put()
 				continue
 			}
 			// break

@@ -3,26 +3,19 @@ package webcrawler
 import (
 	"context"
 	"net/url"
-	"regexp"
 
 	"github.com/odit-bit/webcrawler/x/xpipe"
 )
 
 // link extractor only extract link that has the same host from the domain in html page
 
-// var exclude_Extensions = []string{".jpg", ".jpeg", ".png", ".gif", ".ico", ".css", ".js", ".pdf"}
-
-var (
-	baseHrefRegex = regexp.MustCompile(`(?i)<base.*?href\s*?=\s*?"(.*?)\s*?"`)
-	findLinkRegex = regexp.MustCompile(`(?i)<a.*?href\s*?=\s*?"\s*?(.*?)\s*?".*?>`)
-	// nofollowRegex = regexp.MustCompile(`(?i)rel\s*?=\s*?"?nofollow"?`)
-)
-
 // TODO :  prevent double index (same destination)
 // "example.com" and "example.com/" has same destination
+// TODO : exclude url that not lead to html page (.tar .zip )
 
 // Process implements pipeline.Processor.
 func ExtractURLs() xpipe.ProcessorFunc[*Resource] {
+
 	return func(ctx context.Context, src *Resource) (*Resource, error) {
 		payload := src
 		relTo, err := url.Parse(trailingSlash(payload.URL))

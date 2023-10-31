@@ -2,9 +2,14 @@ package webcrawler
 
 import (
 	"context"
+	"log"
+	"time"
 
 	"github.com/odit-bit/webcrawler/x/xpipe"
 )
+
+//implementation of xpipe pipeline with Resource as concrete type
+//this package also defined the processors that use by stages
 
 type Crawler struct {
 	pipe *xpipe.Pipe[*Resource]
@@ -20,7 +25,7 @@ func NewCrawler() *Crawler {
 }
 
 func (s *Crawler) Crawl(ctx context.Context, fetcher xpipe.Fetcher[*Resource], streamer xpipe.Streamer[*Resource]) error {
-
+	start := time.Now()
 	crawlCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -29,5 +34,6 @@ func (s *Crawler) Crawl(ctx context.Context, fetcher xpipe.Fetcher[*Resource], s
 		return err
 	}
 
+	log.Printf("crawled finish %v", time.Since(start).Round(time.Second))
 	return nil
 }

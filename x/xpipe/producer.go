@@ -23,10 +23,11 @@ func (p *Producer[T]) Produce(ctx context.Context) <-chan T {
 
 	go func() {
 		//close chan as soon as goroutine exit
-		defer func() {
-			close(rscC)
-			log.Println("exit produce")
-		}()
+		defer close(rscC)
+
+		// defer func() {
+		// 	log.Println("exit produce")
+		// }()
 
 		//loop the source
 		for p.fetcher.Next() {
@@ -39,7 +40,7 @@ func (p *Producer[T]) Produce(ctx context.Context) <-chan T {
 		}
 
 		if err := p.fetcher.Error(); err != nil {
-			log.Println("link source error", err)
+			log.Println("producer pipe :", err)
 			return
 		}
 
