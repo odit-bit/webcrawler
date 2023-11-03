@@ -1,5 +1,5 @@
-xold/
-/xold
+/xold/
+/app/
 
 # profiling
 *.pprof
@@ -10,5 +10,4 @@ docker-compose.yaml
 
 
 #
-app/
-/app
+

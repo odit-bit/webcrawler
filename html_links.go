@@ -3,22 +3,20 @@ package webcrawler
 import (
 	"context"
 	"net/url"
+	"path"
+	"strings"
 
 	"github.com/odit-bit/webcrawler/x/xpipe"
 )
 
 // link extractor only extract link that has the same host from the domain in html page
 
-// TODO :  prevent double index (same destination)
-// "example.com" and "example.com/" has same destination
-// TODO : exclude url that not lead to html page (.tar .zip )
-
 // Process implements pipeline.Processor.
 func ExtractURLs() xpipe.ProcessorFunc[*Resource] {
 
 	return func(ctx context.Context, src *Resource) (*Resource, error) {
 		payload := src
-		relTo, err := url.Parse(trailingSlash(payload.URL))
+		relTo, err := url.Parse((payload.URL))
 		if err != nil {
 			return nil, err
 		}
@@ -28,10 +26,11 @@ func ExtractURLs() xpipe.ProcessorFunc[*Resource] {
 		content := payload.rawBuffer.String()
 		baseMatch := baseHrefRegex.FindStringSubmatch(content)
 		if len(baseMatch) == 2 {
-			base := resolveURL(relTo, trailingSlash(baseMatch[1]))
+			base := resolveURL(relTo, baseMatch[1])
 			if base != nil {
 				relTo = base
 			}
+
 		}
 
 		//find unique set of link
@@ -42,24 +41,14 @@ func ExtractURLs() xpipe.ProcessorFunc[*Resource] {
 		for _, match := range findLinkRegex.FindAllStringSubmatch(content, -1) {
 			link := resolveURL(relTo, match[1])
 
-			if link == nil {
+			var ok bool
+			link, ok = isValidate(relTo, link)
+			if !ok {
 				continue
 			}
 
-			// Skip links to the other host
-			if link.Host != relTo.Host {
-				continue
-			}
-
-			// Truncate anchors and drop duplicates
-			link.Fragment = ""
 			linkStr := link.String()
 			if _, seen := seenMap[linkStr]; seen {
-				continue
-			}
-
-			// Skip URLs that point to files that cannot contain html content.
-			if exclusionRegex.MatchString(linkStr) {
 				continue
 			}
 
@@ -72,32 +61,50 @@ func ExtractURLs() xpipe.ProcessorFunc[*Resource] {
 	}
 }
 
-func retainLink(srcHost string, link *url.URL) bool {
+func isContainNonHTML(link string) bool {
+	ext := path.Ext(link)
+	switch ext {
+	case ".html", "htm", "":
+		return false
+	default:
+		return true
+	}
+}
+
+func isValidate(relTo *url.URL, link *url.URL) (*url.URL, bool) {
 	// Skip links that could not be resolved
 	if link == nil {
-		return false
+		return nil, false
+	}
+
+	link.Path = strings.TrimRight(link.Path, "/")
+
+	// Skip links to the other host
+	if link.Host != relTo.Host {
+		return nil, false
 	}
 
 	// Skip links with non http(s) schemes
 	if link.Scheme != "http" && link.Scheme != "https" {
-		return false
+		return nil, false
 	}
 
-	// Keep links to the same host
-	if link.Hostname() == srcHost {
-		return true
+	if isContainNonHTML(link.Path) {
+		return nil, false
 	}
 
-	// Skip links that resolve to private networks
-	if isPrivate := isPrivate(link.Host); isPrivate {
-		return false
-	}
+	link.Path = strings.TrimSuffix(link.Path, ".html")
+	link.Fragment = ""
 
-	return true
+	// // Skip links that resolve to private networks
+	// if isPrivate := isPrivate(link.Host); isPrivate {
+	// 	return false
+	// }
+
+	return link, true
 }
 
 // add "/" if link not end up with that
-// ex: http://example.com/about become http://example.com/about/
 func trailingSlash(s string) string {
 	if s == "" {
 		return "/"
