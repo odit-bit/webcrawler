@@ -22,8 +22,12 @@ github.com/microcosm-cc/bluemonday v1.0.26 h1:xbqSvqzQMeEHCqMi64VAs4d8uy6Mequs3r
 github.com/microcosm-cc/bluemonday v1.0.26/go.mod h1:JyzOCs9gkyQyjs+6h10UEVSe02CGwkhd72Xdqh78TWs=
 github.com/odit-bit/indexstore v0.0.0-20231102122933-dc6d4940150c h1:ARhOkNl1H8vmc1oygpDqd905p/nfesgKiXmd6ydfE7E=
 github.com/odit-bit/indexstore v0.0.0-20231102122933-dc6d4940150c/go.mod h1:fZnXTidt+dlXKBlBwimFOwYv3RVv1S9nps4J7OjzIqc=
+github.com/odit-bit/indexstore v0.0.0-20231104172422-ef325932f755 h1:tm34V7sKh0bkZbh5zjqeLOQ/EBAJIi2eaKcbGA92qqc=
+github.com/odit-bit/indexstore v0.0.0-20231104172422-ef325932f755/go.mod h1:fZnXTidt+dlXKBlBwimFOwYv3RVv1S9nps4J7OjzIqc=
 github.com/odit-bit/linkstore v0.0.0-20231102131426-51e29bc2a686 h1:NcJBn7MEVwHA75oXEIFO6ZlVFI0TObTQhM5CSmicbeg=
 github.com/odit-bit/linkstore v0.0.0-20231102131426-51e29bc2a686/go.mod h1:L3SuLfk5tk6vKSeznZdlFOhQrsEr9D9ANPxfYKZco+M=
+github.com/odit-bit/linkstore v0.0.0-20231104171121-9082db25a205 h1:gJHTsKgbDAhgMFALqOWgXnrJLMIJ0mlwm6QkpZV8iMU=
+github.com/odit-bit/linkstore v0.0.0-20231104171121-9082db25a205/go.mod h1:L3SuLfk5tk6vKSeznZdlFOhQrsEr9D9ANPxfYKZco+M=
 golang.org/x/crypto v0.14.0 h1:wBqGXzWJW6m1XrIKlAH0Hs1JJ7+9KBwnIO8v66Q9cHc=
 golang.org/x/crypto v0.14.0/go.mod h1:MVFd36DqK4CsrnJYDkBA3VC4m2GkXAM0PvzMCn4JQf4=
 golang.org/x/net v0.17.0 h1:pVaXccu2ozPjCXewfr1S7xza/zcXTity9cCdXQYSjIM=

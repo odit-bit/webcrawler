@@ -1,0 +1,9 @@
+docker-compose.yaml
+dockerfile
+?dockerfile
+dockerfile?
+
+.git
+.gitignore
+
+**/test

@@ -5,8 +5,8 @@ go 1.21.3
 require (
 	github.com/google/uuid v1.4.0
 	github.com/microcosm-cc/bluemonday v1.0.26
-	github.com/odit-bit/indexstore v0.0.0-20231102122933-dc6d4940150c
-	github.com/odit-bit/linkstore v0.0.0-20231102131426-51e29bc2a686
+	github.com/odit-bit/indexstore v0.0.0-20231104172422-ef325932f755
+	github.com/odit-bit/linkstore v0.0.0-20231104171121-9082db25a205
 	golang.org/x/net v0.17.0
 	golang.org/x/sync v0.4.0
 )
