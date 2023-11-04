@@ -9,7 +9,7 @@ import (
 	"github.com/odit-bit/webcrawler/x/xpipe"
 )
 
-// link extractor only extract link that has the same host from the domain in html page
+// ExtractURLs only extract link that has the same host as the domain in html page
 
 // Process implements pipeline.Processor.
 func ExtractURLs() xpipe.ProcessorFunc[*Resource] {

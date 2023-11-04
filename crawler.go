@@ -2,8 +2,6 @@ package webcrawler
 
 import (
 	"context"
-	"log"
-	"time"
 
 	"github.com/odit-bit/webcrawler/x/xpipe"
 )
@@ -25,7 +23,6 @@ func NewCrawler() *Crawler {
 }
 
 func (s *Crawler) Crawl(ctx context.Context, fetcher xpipe.Fetcher[*Resource], streamer xpipe.Streamer[*Resource]) error {
-	start := time.Now()
 	crawlCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -33,7 +30,5 @@ func (s *Crawler) Crawl(ctx context.Context, fetcher xpipe.Fetcher[*Resource], s
 	if err != nil {
 		return err
 	}
-
-	log.Printf("crawled finish %v", time.Since(start).Round(time.Second))
 	return nil
 }

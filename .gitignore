@@ -1,5 +1,5 @@
-/xold/
-/app/
+xold/
+app/
 
 # profiling
 *.pprof
