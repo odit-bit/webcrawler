@@ -1,4 +1,4 @@
-package webcrawler
+package crawler
 
 import "regexp"
 

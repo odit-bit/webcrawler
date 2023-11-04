@@ -1,4 +1,4 @@
-package webcrawler
+package crawler
 
 /*
 	WIP, changing API will still occure

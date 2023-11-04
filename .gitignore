@@ -1,5 +1,5 @@
 xold/
-app/
+test/
 
 # profiling
 *.pprof
