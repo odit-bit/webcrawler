@@ -35,6 +35,10 @@ type Resource struct {
 	retrieve time.Time
 }
 
+func (r *Resource) Buffer() *bytes.Buffer {
+	return &r.rawBuffer
+}
+
 func newResource() *Resource {
 	r := &Resource{
 		rawBuffer: bytes.Buffer{},

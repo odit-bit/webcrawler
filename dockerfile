@@ -9,14 +9,14 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /
 
 COPY . .
-RUN go mod download
+# RUN go mod download
 # RUN go test
 
 # make static image
 ENV CGO_ENABLED=0
 ENV GOOS=linux
 ENV GOARCH=amd64
-RUN go build -o /crawler-service ./main.go
+RUN go build -o /crawler-service ./
 
 
 ########################################################

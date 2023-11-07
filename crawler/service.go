@@ -12,12 +12,37 @@ import (
 	"github.com/odit-bit/indexstore/index"
 	"github.com/odit-bit/linkstore/linkgraph"
 	"github.com/odit-bit/webcrawler/x/xpipe"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var minUUID = uuid.Nil
 var maxUUID = uuid.MustParse("ffffffff-ffff-ffff-ffff-ffffffffffff")
 var default_interval = 1 * time.Minute
 var default_recrawl_interval = 7 * 24 * time.Hour
+
+type Config struct {
+	// GraphAPI GraphUpdater
+	// IndexAPI DocIndexer
+
+	Interval        time.Duration
+	ReCrawlTreshold time.Duration
+	Tracer          trace.Tracer
+}
+
+func (c *Config) validate() {
+
+	if c.Interval == 0 {
+		c.Interval = default_interval
+	}
+	if c.ReCrawlTreshold == 0 {
+		c.ReCrawlTreshold = default_recrawl_interval
+	}
+	if c.Tracer == nil {
+		c.Tracer = otel.Tracer("crawler")
+	}
+
+}
 
 type CrawlService struct {
 	crawler  *Crawler
@@ -26,6 +51,7 @@ type CrawlService struct {
 
 	Interval        time.Duration //default 1 * time.Minute
 	RecrawlInterval time.Duration
+	tracer          trace.Tracer
 }
 
 func New(graphAPI GraphUpdater, indexAPI DocIndexer) *CrawlService {
@@ -36,6 +62,19 @@ func New(graphAPI GraphUpdater, indexAPI DocIndexer) *CrawlService {
 
 		Interval:        default_interval,
 		RecrawlInterval: default_recrawl_interval,
+	}
+	return &s
+}
+
+func NewConfig(graphAPI GraphUpdater, indexAPI DocIndexer, conf *Config) *CrawlService {
+	conf.validate()
+	s := CrawlService{
+		crawler:         NewCrawler(),
+		graphAPI:        graphAPI,
+		indexAPI:        indexAPI,
+		Interval:        conf.Interval,
+		RecrawlInterval: conf.ReCrawlTreshold,
+		tracer:          conf.Tracer,
 	}
 	return &s
 }
@@ -62,7 +101,10 @@ func (la *CrawlService) Run(ctx context.Context) error {
 //from api
 
 func (la *CrawlService) startCrawl(ctx context.Context) error {
+	spanCtx, span := la.tracer.Start(ctx, "crawl")
+	defer span.End()
 
+	span.AddEvent("run crawler pipeline")
 	producer, err := la.Fetcher(minUUID, maxUUID, time.Now().Add(-la.RecrawlInterval))
 	if err != nil {
 		return err
@@ -73,7 +115,7 @@ func (la *CrawlService) startCrawl(ctx context.Context) error {
 		return err
 	}
 
-	err = la.crawler.Crawl(ctx, producer, consumer)
+	err = la.crawler.Crawl(spanCtx, producer, consumer)
 	producer.Close()
 
 	log.Println("fecthed link:", producer.counter)
